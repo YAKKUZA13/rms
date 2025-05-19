@@ -44,15 +44,15 @@ function compareStatus(dbStatus, expectedStatus) {
 
 exports.createTicket = async (req, res) => {
   try {
-    const { subject, content } = req.body;
+    const { subject, text } = req.body;
     
-    if (!subject || !content) {
+    if (!subject || !text) {
       return res.status(400).json({ message: 'Необходимо указать тему и текст обращения' });
     }
     
     const result = await pool.query(
       'INSERT INTO appeals (subject, text) VALUES ($1, $2) RETURNING *',
-      [subject, content]
+      [subject, text]
     );
     
     const ticket = result.rows[0];
