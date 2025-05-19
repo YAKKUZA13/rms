@@ -1,46 +1,9 @@
 const pool = require('../db/db');
 
-// Константы статусов для обработки кодировки
 const STATUS_NEW = 'Новое';
 const STATUS_IN_PROGRESS = 'В работе';
 const STATUS_COMPLETED = 'Завершено';
 const STATUS_CANCELED = 'Отменено';
-
-function compareStatus(dbStatus, expectedStatus) {
-  if (expectedStatus === STATUS_NEW) {
-    return dbStatus === STATUS_NEW || 
-           dbStatus === '╨Э╨╛╨▓╨╛╨╡' || 
-           dbStatus === 'ютюх' || 
-           dbStatus === 'PH', // Измененные символы
-           dbStatus.includes('ов');
-  }
-  
-  // Для статуса "В работе"
-  if (expectedStatus === STATUS_IN_PROGRESS) {
-    return dbStatus === STATUS_IN_PROGRESS || 
-           dbStatus === '╨Т ╤А╨░╨▒╨╛╤В╨╡' || 
-           dbStatus === 'P', // Измененные символы
-           dbStatus.includes('абот');
-  }
-  
-  // Для статуса "Завершено"
-  if (expectedStatus === STATUS_COMPLETED) {
-    return dbStatus === STATUS_COMPLETED || 
-           dbStatus === '╨Ч╨░╨▓╨╡╤А╤И╨╡╨╜╨╛' || 
-           dbStatus === 'P3', // Измененные символы
-           dbStatus.includes('ерш');
-  }
-  
-  // Для статуса "Отменено"
-  if (expectedStatus === STATUS_CANCELED) {
-    return dbStatus === STATUS_CANCELED || 
-           dbStatus === '╨Ю╤В╨╝╨╡╨╜╨╡╨╜╨╛' || 
-           dbStatus === 'PO', // Измененные символы
-           dbStatus.includes('мен');
-  }
-  
-  return false;
-}
 
 exports.createTicket = async (req, res) => {
   try {
@@ -186,16 +149,7 @@ exports.getTickets = async (req, res) => {
     
     const result = await pool.query(query, params);
     
-    const tickets = result.rows.map(ticket => {
-      const t = {...ticket};
-      if (compareStatus(t.status, STATUS_NEW)) t.status = STATUS_NEW;
-      else if (compareStatus(t.status, STATUS_IN_PROGRESS)) t.status = STATUS_IN_PROGRESS;
-      else if (compareStatus(t.status, STATUS_COMPLETED)) t.status = STATUS_COMPLETED;
-      else if (compareStatus(t.status, STATUS_CANCELED)) t.status = STATUS_CANCELED;
-      return t;
-    });
-    
-    res.json(tickets);
+    res.json(result.rows);
   } catch (error) {
     console.error('Error getting tickets:', error);
     res.status(500).json({ message: 'Ошибка сервера при получении списка обращений' });
@@ -210,23 +164,14 @@ exports.cancelAllInProgressTickets = async (req, res) => {
       return res.status(400).json({ message: 'Необходимо указать причину отмены' });
     }
     
-    const statuses = ['В работе', '╨Т ╤А╨░╨▒╨╛╤В╨╡', 'P']; // Измененные символы
-    const placeholders = statuses.map((_, i) => `$${i + 2}`).join(', ');
-    
     const result = await pool.query(
-      `UPDATE appeals SET status = $1, cancellation_reason = $2, updated_at = CURRENT_TIMESTAMP WHERE status IN (${placeholders}) RETURNING *`,
-      [STATUS_CANCELED, cancellation_reason, ...statuses]
+      `UPDATE appeals SET status = $1, cancellation_reason = $2, updated_at = CURRENT_TIMESTAMP WHERE status = $3 RETURNING *`,
+      [STATUS_CANCELED, cancellation_reason, STATUS_IN_PROGRESS]
     );
     
-    const tickets = result.rows.map(ticket => {
-      const t = {...ticket};
-      t.status = STATUS_CANCELED;
-      return t;
-    });
-    
     res.json({
-      message: `Отменено ${tickets.length} обращений в работе`,
-      tickets: tickets
+      message: `Отменено ${result.rows.length} обращений в работе`,
+      tickets: result.rows
     });
   } catch (error) {
     console.error('Error canceling in-progress tickets:', error);

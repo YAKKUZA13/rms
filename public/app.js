@@ -1,5 +1,4 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Элементы интерфейса
     const createTicketForm = document.getElementById('createTicketForm');
     const manageTicketForm = document.getElementById('manageTicketForm');
     const cancelAllForm = document.getElementById('cancelAllForm');
@@ -21,44 +20,6 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => {
             notification.className = 'notification';
         }, 3000);
-    }
-
-    function fixEncoding(text) {
-        if (!text) return '';
-        
-        const replacements = {
-            "РќРѕРІРѕРµ": "Новое",
-            "Р' СЂР°Р±РѕС‚Рµ": "В работе",
-            "Р—Р°РІРµСЂС€РµРЅРѕ": "Завершено",
-            "РћС‚РјРµРЅРµРЅРѕ": "Отменено",
-            "╨Э╨╛╨▓╨╛╨╡": "Новое",
-            "╨Т ╤А╨░╨▒╨╛╤В╨╡": "В работе",
-            "╨Ч╨░╨▓╨╡╤А╤И╨╡╨╜╨╛": "Завершено",
-            "╨Ю╤В╨╝╨╡╨╜╨╡╨╜╨╛": "Отменено",
-            "ютюх": "Новое"
-        };
-        
-        for (const [encoded, decoded] of Object.entries(replacements)) {
-            if (text.includes(encoded)) {
-                return text.replace(new RegExp(encoded, 'g'), decoded);
-            }
-        }
-        
-        return text;
-    }
-
-    function getStatusText(status) {
-        const fixedStatus = fixEncoding(status);
-        
-        if (fixedStatus === status) {
-            if (status.includes('ют')) return 'Новое';
-            if (status.includes('раб')) return 'В работе';
-            if (status.includes('верш')) return 'Завершено';
-            if (status.includes('тме')) return 'Отменено';
-            return 'Новое'; // По умолчанию
-        }
-        
-        return fixedStatus;
     }
 
     function loadTickets(date = null) {
@@ -84,7 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 ticketsList.innerHTML = '';
                 tickets.forEach(ticket => {
-                    const status = getStatusText(ticket.status);
+                    const status = ticket.status;
                     const statusClass = getStatusClass(status);
                     
                     const ticketElement = document.createElement('div');
@@ -92,21 +53,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     
                     const formattedDate = new Date(ticket.created_at).toLocaleString('ru-RU');
                     
-                    const subject = fixEncoding(ticket.subject);
-                    const text = fixEncoding(ticket.text);
-                    const solution = ticket.solution ? fixEncoding(ticket.solution) : '';
-                    const cancellation_reason = ticket.cancellation_reason ? fixEncoding(ticket.cancellation_reason) : '';
-                    
                     ticketElement.innerHTML = `
                         <div class="ticket-header">
                             <span class="ticket-id">ID: ${ticket.id}</span>
                             <span class="status ${statusClass}">${status}</span>
                         </div>
-                        <h3>${subject}</h3>
-                        <p>${text}</p>
+                        <h3>${ticket.subject}</h3>
+                        <p>${ticket.text}</p>
                         <p><small>Создано: ${formattedDate}</small></p>
-                        ${solution ? `<div class="solution"><strong>Решение:</strong> ${solution}</div>` : ''}
-                        ${cancellation_reason ? `<div class="cancellation"><strong>Причина отмены:</strong> ${cancellation_reason}</div>` : ''}
+                        ${ticket.solution ? `<div class="solution"><strong>Решение:</strong> ${ticket.solution}</div>` : ''}
+                        ${ticket.cancellation_reason ? `<div class="cancellation"><strong>Причина отмены:</strong> ${ticket.cancellation_reason}</div>` : ''}
                     `;
                     
                     ticketsList.appendChild(ticketElement);
@@ -197,7 +153,6 @@ document.addEventListener('DOMContentLoaded', () => {
         .then(response => {
             if (!response.ok) {
                 return response.json().then(data => {
-                    data.message = fixEncoding(data.message);
                     throw new Error(data.message || 'Ошибка при обработке обращения');
                 });
             }
@@ -244,7 +199,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return response.json();
         })
         .then(data => {
-            showNotification(`${fixEncoding(data.message)}`);
+            showNotification(data.message);
             cancelAllForm.reset();
             loadTickets(); 
         })
