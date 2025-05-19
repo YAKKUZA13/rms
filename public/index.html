@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Система управления обращениями</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>Система управления обращениями</h1>
+    </header>
+
+    <div class="container">
+        <div class="notification" id="notification"></div>
+
+        <div class="card">
+            <h2>Создать новое обращение</h2>
+            <form id="createTicketForm">
+                <div class="form-group">
+                    <label for="subject">Тема обращения:</label>
+                    <input type="text" id="subject" name="subject" required>
+                </div>
+                <div class="form-group">
+                    <label for="content">Текст обращения:</label>
+                    <textarea id="content" name="content" rows="4" required></textarea>
+                </div>
+                <button type="submit">Создать обращение</button>
+            </form>
+        </div>
+
+        <div class="card">
+            <h2>Список обращений</h2>
+            <div class="filter-controls">
+                <label for="dateFilter">Фильтр по дате:</label>
+                <input type="date" id="dateFilter">
+                <button id="applyDateFilter">Применить</button>
+                <button id="clearFilters">Сбросить</button>
+            </div>
+            <div class="tickets-list" id="ticketsList">
+                <div class="loading">Загрузка...</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Управление обращением</h2>
+            <form id="manageTicketForm">
+                <div class="form-group">
+                    <label for="ticketId">ID обращения:</label>
+                    <input type="text" id="ticketId" name="ticketId" required>
+                </div>
+                <div class="form-group">
+                    <label for="action">Действие:</label>
+                    <select id="action" name="action">
+                        <option value="take">Взять в работу</option>
+                        <option value="complete">Завершить</option>
+                        <option value="cancel">Отменить</option>
+                    </select>
+                </div>
+                <div class="form-group" id="solutionGroup" style="display: none;">
+                    <label for="solution">Решение проблемы:</label>
+                    <textarea id="solution" name="solution" rows="4"></textarea>
+                </div>
+                <div class="form-group" id="cancellationGroup" style="display: none;">
+                    <label for="cancellation_reason">Причина отмены:</label>
+                    <textarea id="cancellation_reason" name="cancellation_reason" rows="4"></textarea>
+                </div>
+                <button type="submit">Выполнить</button>
+            </form>
+        </div>
+
+        <div class="card">
+            <h2>Отменить все обращения "В работе"</h2>
+            <form id="cancelAllForm">
+                <div class="form-group">
+                    <label for="cancelAllReason">Причина отмены:</label>
+                    <textarea id="cancelAllReason" name="cancelAllReason" rows="4" required></textarea>
+                </div>
+                <button type="submit" class="danger-btn">Отменить все</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html> 
